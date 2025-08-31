@@ -7,7 +7,6 @@ class SampleDataService {
     private init() {}
     
     func generateSampleData(context: NSManagedObjectContext) {
-        // Create sample users
         let user1 = User(context: context)
         user1.id = UUID()
         user1.username = "john_doe"
@@ -38,7 +37,6 @@ class SampleDataService {
         user3.following = 0
         user3.posts = 0
         
-        // Create sample posts
         let post1 = Post(context: context)
         post1.id = UUID()
         post1.caption = "Beautiful sunset at the beach today! 🌅 #sunset #beach #photography"
@@ -79,7 +77,6 @@ class SampleDataService {
         post4.author = user1
         post4.isLiked = false
         
-        // Create sample stories
         let story1 = Story(context: context)
         story1.id = UUID()
         story1.mediaURL = "https://picsum.photos/300/400?random=20"
@@ -107,12 +104,10 @@ class SampleDataService {
         story3.author = user3
         story3.isViewed = false
         
-        // Update user post counts
         user1.posts = 2
         user2.posts = 1
         user3.posts = 1
         
-        // Save context
         do {
             try context.save()
         } catch {

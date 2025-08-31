@@ -6,7 +6,6 @@ class StoriesDataService: ObservableObject {
     
     private init() {}
     
-    // MARK: - JSON Data Structure
     struct UsersResponse: Codable {
         let pages: [Page]
     }
@@ -21,7 +20,6 @@ class StoriesDataService: ObservableObject {
         let profile_picture_url: String
     }
     
-    // MARK: - Story Content
     private let storyContents = [
         "Just had the most amazing coffee! ☕️",
         "Beautiful sunset tonight 🌅",
@@ -68,7 +66,6 @@ class StoriesDataService: ObservableObject {
         "https://picsum.photos/400/600?random=20"
     ]
     
-    // MARK: - Public Methods
     func loadUsersFromJSON() -> [UserData] {
         guard let url = Bundle.main.url(forResource: "users", withExtension: "json"),
               let data = try? Data(contentsOf: url),
@@ -80,7 +77,6 @@ class StoriesDataService: ObservableObject {
     }
     
     func generateStoriesForUser(_ user: User, context: NSManagedObjectContext) {
-        // Generate 5-8 stories per user for better testing
         let storyCount = Int.random(in: 5...8)
         
         for i in 0..<storyCount {
@@ -89,7 +85,7 @@ class StoriesDataService: ObservableObject {
             story.content = storyContents.randomElement() ?? "Amazing day! ✨"
             story.mediaURL = storyImages.randomElement() ?? "https://picsum.photos/400/600?random=\(Int.random(in: 1...100))"
             story.mediaType = "image"
-            story.timestamp = Date().addingTimeInterval(-Double(i * 1800)) // Staggered timestamps (30 min apart)
+            story.timestamp = Date().addingTimeInterval(-Double(i * 1800))
             story.duration = Double.random(in: 3.0...8.0)
             story.author = user
             story.isViewed = false
@@ -98,7 +94,6 @@ class StoriesDataService: ObservableObject {
     }
     
     func generateAllStories(context: NSManagedObjectContext) {
-        // Clear existing stories
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = Story.fetchRequest()
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         
@@ -108,7 +103,6 @@ class StoriesDataService: ObservableObject {
             print("Failed to clear existing stories: \(error)")
         }
         
-        // Load users from JSON and create stories
         let userData = loadUsersFromJSON()
         
         for userData in userData {
@@ -122,11 +116,9 @@ class StoriesDataService: ObservableObject {
             user.following = Int32.random(in: 50...500)
             user.posts = 0
             
-            // Generate stories for this user
             generateStoriesForUser(user, context: context)
         }
         
-        // Save context
         do {
             try context.save()
         } catch {

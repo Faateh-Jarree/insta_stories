@@ -6,7 +6,6 @@ struct FeedView: View {
     @StateObject private var feedViewModel: FeedViewModel
     
     init() {
-        // Initialize with empty context, will be updated in onAppear
         self._feedViewModel = StateObject(wrappedValue: FeedViewModel(context: NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)))
     }
     
@@ -14,10 +13,8 @@ struct FeedView: View {
         NavigationView {
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    // Stories Section
                     StoriesSection(context: viewContext)
                     
-                    // Posts Section
                     if feedViewModel.posts.isEmpty && !feedViewModel.isLoading {
                         EmptyPostsView()
                     } else {
@@ -47,12 +44,9 @@ struct FeedView: View {
             }
         }
         .onAppear {
-            // Update context when view appears
             feedViewModel.context = viewContext
             
-            // Small delay to ensure Core Data is fully initialized
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                // Load data with new context
                 feedViewModel.loadPosts()
             }
         }

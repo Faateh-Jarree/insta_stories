@@ -7,21 +7,14 @@ struct PostCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Post Header
             PostHeader(post: post)
-            
-            // Post Image
             PostImage(imageURL: post.imageURL ?? "")
-            
-            // Post Actions
             PostActions(post: post, onLike: onLike)
-            
-            // Post Info
             PostInfo(post: post)
         }
         .background(Color(.systemBackground))
-        .cornerRadius(8)
-        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+        .cornerRadius(12)
+        .shadow(color: Color(.sRGBLinear, white: 0, opacity: 0.1), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -158,6 +151,5 @@ struct PostInfo: View {
 }
 
 #Preview {
-    // This preview won't work until Core Data entities are generated
     Text("PostCard Preview")
 }

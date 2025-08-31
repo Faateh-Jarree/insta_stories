@@ -12,11 +12,9 @@ class FeedViewModel: ObservableObject {
     
     init(context: NSManagedObjectContext) {
         self.context = context
-        // Don't load posts here - wait for explicit call
     }
     
     func loadPosts() {
-        // Guard against invalid context
         guard context.persistentStoreCoordinator != nil else {
             errorMessage = "Core Data context not ready"
             return
@@ -38,7 +36,6 @@ class FeedViewModel: ObservableObject {
     }
     
     func likePost(_ post: Post) {
-        // Guard against invalid context
         guard context.persistentStoreCoordinator != nil else {
             errorMessage = "Core Data context not ready"
             return

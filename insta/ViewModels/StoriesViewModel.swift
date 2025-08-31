@@ -28,7 +28,6 @@ class StoriesViewModel: ObservableObject {
         errorMessage = nil
         currentPage = 0
         
-        // Load initial stories
         let initialStories = StoriesDataService.shared.loadMoreStories(
             context: context,
             currentCount: 0,
@@ -67,7 +66,6 @@ class StoriesViewModel: ObservableObject {
         
         do {
             try context.save()
-            // Force UI update by triggering objectWillChange
             objectWillChange.send()
         } catch {
             errorMessage = "Failed to mark story as viewed: \(error.localizedDescription)"
@@ -80,36 +78,22 @@ class StoriesViewModel: ObservableObject {
             return
         }
         
-        print("Toggling like for story: \(story.id?.uuidString ?? "unknown")")
-        print("Current like state: \(story.isLiked)")
-        
-        // Toggle the like state
         story.isLiked.toggle()
-        
-        print("New like state: \(story.isLiked)")
         
         do {
             try context.save()
-            print("Context saved successfully")
-            
-            // Force UI update by triggering objectWillChange
             objectWillChange.send()
             
-            // Also update the stories array to trigger UI refresh
             if let index = stories.firstIndex(of: story) {
                 stories[index] = story
-                print("Updated story in array at index: \(index)")
             }
             
-            // Force a UI refresh
             DispatchQueue.main.async {
                 self.objectWillChange.send()
             }
             
         } catch {
             errorMessage = "Failed to toggle story like: \(error.localizedDescription)"
-            print("Failed to save context: \(error)")
-            // Revert the change if save failed
             story.isLiked.toggle()
         }
     }
@@ -123,19 +107,16 @@ class StoriesViewModel: ObservableObject {
         loadStories()
     }
     
-    // Helper method to get stories for a specific user
     func getStoriesForUser(_ user: User) -> [Story] {
         return stories.filter { $0.author?.id == user.id }
     }
     
-    // Helper method to get next story in sequence
     func getNextStory(after currentStory: Story) -> Story? {
         guard let currentIndex = stories.firstIndex(of: currentStory) else { return nil }
         let nextIndex = currentIndex + 1
         return nextIndex < stories.count ? stories[nextIndex] : nil
     }
     
-    // Helper method to get previous story in sequence
     func getPreviousStory(before currentStory: Story) -> Story? {
         guard let currentIndex = stories.firstIndex(of: currentStory) else { return nil }
         let prevIndex = currentIndex - 1

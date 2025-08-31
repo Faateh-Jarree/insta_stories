@@ -18,7 +18,7 @@ struct StoryViewer: View {
     @State private var currentUserIndex = 0
     
     private let storyDuration: TimeInterval = 5.0
-    private let progressUpdateInterval: TimeInterval = 0.05 // More frequent updates for smoother animation
+    private let progressUpdateInterval: TimeInterval = 0.05
     
     enum TransitionDirection {
         case none, left, right
@@ -27,11 +27,9 @@ struct StoryViewer: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Background
                 Color.black
                     .ignoresSafeArea()
                 
-                // Story Content with Cube Transition - Should be interactive
                 Group {
                     if let currentStory = getCurrentStory() {
                         StoryContentView(
@@ -41,7 +39,6 @@ struct StoryViewer: View {
                             totalStories: currentUserStories.count,
                             currentIndex: currentStoryIndex,
                             onLike: {
-                                print("StoryViewer onLike called for story: \(currentStory.id?.uuidString ?? "unknown")")
                                 viewModel.toggleStoryLike(currentStory)
                             },
                             onUserTap: {
@@ -57,12 +54,12 @@ struct StoryViewer: View {
                                 shouldDismiss = true
                             }
                         )
-                        .id(currentStory.id) // Important: uniquely identify the current story
+                        .id(currentStory.id)
                         .transition(.asymmetric(
                             insertion: .move(edge: transitionDirection == .left ? .trailing : .leading),
                             removal: .move(edge: transitionDirection == .left ? .leading : .trailing)
                         ))
-                        .animation(.easeInOut(duration: 0.3), value: currentStory.id) // Animate on story change
+                        .animation(.easeInOut(duration: 0.3), value: currentStory.id)
                     }
                 }
             }
@@ -91,18 +88,13 @@ struct StoryViewer: View {
                 dismiss()
             }
         }
-        .onChange(of: viewModel.stories) { _, newValue in
-            print("Stories updated in StoryViewer, count: \(newValue.count)")
-        }
     }
     
     private func setupStories() {
-        // Get all stories from the same user
         if let author = story.author {
             currentUserStories = viewModel.stories.filter { $0.author?.id == author.id }
             currentStoryIndex = currentUserStories.firstIndex(of: story) ?? 0
             
-            // Find the current user's index in the overall stories array
             if let currentStory = getCurrentStory(),
                let index = viewModel.stories.firstIndex(of: currentStory) {
                 currentUserIndex = index
@@ -130,106 +122,78 @@ struct StoryViewer: View {
     private func stopAutoAdvance() {
         autoAdvanceTimer?.invalidate()
         autoAdvanceTimer = nil
-        print("Auto-advance timer stopped")
     }
     
     private func restartAutoAdvance() {
         stopAutoAdvance()
         startAutoAdvance()
-        print("Auto-advance timer restarted")
     }
     
     private func nextStory() {
-        print("nextStory called - current index: \(currentStoryIndex), total stories: \(currentUserStories.count)")
         if currentStoryIndex < currentUserStories.count - 1 {
-            // Next story of same user
-            print("Moving to next story of same user")
             transitionDirection = .left
             withAnimation(.easeInOut(duration: 0.3)) {
                 currentStoryIndex += 1
                 progressValue = 0.0
             }
         } else {
-            // Move to next user
-            print("Moving to next user")
             nextUser()
         }
     }
     
     private func previousStory() {
-        print("previousStory called - current index: \(currentStoryIndex), total stories: \(currentUserStories.count)")
         if currentStoryIndex > 0 {
-            // Previous story of same user
-            print("Moving to previous story of same user")
             transitionDirection = .right
             withAnimation(.easeInOut(duration: 0.3)) {
                 currentStoryIndex -= 1
                 progressValue = 0.0
             }
         } else {
-            // Move to previous user
-            print("Moving to previous user")
             previousUser()
         }
     }
     
     private func nextUser() {
-        print("nextUser called - current user index: \(currentUserIndex), total stories in ViewModel: \(viewModel.stories.count)")
-        // Find the next user with stories
         var nextUserIndex = currentUserIndex + 1
         while nextUserIndex < viewModel.stories.count {
             let nextStory = viewModel.stories[nextUserIndex]
             if let nextAuthor = nextStory.author {
-                // Check if this user has stories
                 let userStories = viewModel.stories.filter { $0.author?.id == nextAuthor.id }
                 if !userStories.isEmpty {
-                    // Found next user with stories, update current state
-                    print("Found next user with stories: \(nextAuthor.fullName ?? "unknown")")
                     currentUserStories = userStories
                     currentStoryIndex = 0
                     currentUserIndex = nextUserIndex
                     progressValue = 0.0
-                    restartAutoAdvance() // Restart timer for new user
+                    restartAutoAdvance()
                     return
                 }
             }
             nextUserIndex += 1
         }
         
-        // No more users with stories, dismiss
-        print("No more users with stories, dismissing")
         shouldDismiss = true
     }
     
     private func previousUser() {
-        print("previousUser called - current user index: \(currentUserIndex), total stories in ViewModel: \(viewModel.stories.count)")
-        // Find the previous user with stories
         var prevUserIndex = currentUserIndex - 1
         while prevUserIndex >= 0 {
             let prevStory = viewModel.stories[prevUserIndex]
             if let prevAuthor = prevStory.author {
-                // Check if this user has stories
                 let userStories = viewModel.stories.filter { $0.author?.id == prevAuthor.id }
                 if !userStories.isEmpty {
-                    // Found previous user with stories, update current state
-                    print("Found previous user with stories: \(prevAuthor.fullName ?? "unknown")")
                     currentUserStories = userStories
                     currentStoryIndex = userStories.count - 1
                     currentUserIndex = prevUserIndex
                     progressValue = 0.0
-                    restartAutoAdvance() // Restart timer for new user
+                    restartAutoAdvance()
                     return
                 }
             }
             prevUserIndex -= 1
         }
         
-        // No more users with stories, dismiss
-        print("No more previous users with stories, dismissing")
         shouldDismiss = true
     }
-    
-
 }
 
 struct StoryContentView: View {
@@ -254,26 +218,22 @@ struct StoryContentView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Tap Navigation Zones in Background (left/right thirds)
                 HStack(spacing: 0) {
                     Color.clear
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            print("Tapped left area")
                             onPrevious()
                         }
 
                     Color.clear
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            print("Tapped right area")
                             onNext()
                         }
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height)
                 .allowsHitTesting(true)
 
-                // Main Story UI Content
                 VStack(spacing: 0) {
                     storyHeader
                         .zIndex(20)
@@ -283,9 +243,9 @@ struct StoryContentView: View {
                         .zIndex(15)
                     
                     storyControls
-                        .zIndex(25) // Ensure buttons are above tap zones
+                        .zIndex(25)
                 }
-                .zIndex(50) // All UI elements above tap zone
+                .zIndex(50)
             }
             .gesture(
                 DragGesture()
@@ -399,9 +359,7 @@ struct StoryContentView: View {
             }
             .buttonStyle(PlainButtonStyle())
             
-            Button(action: {
-                // Reply action
-            }) {
+            Button(action: {}) {
                 VStack(spacing: 4) {
                     Image(systemName: "message")
                         .font(.title)
@@ -411,9 +369,7 @@ struct StoryContentView: View {
             }
             .buttonStyle(PlainButtonStyle())
             
-            Button(action: {
-                // Share action
-            }) {
+            Button(action: {}) {
                 VStack(spacing: 4) {
                     Image(systemName: "paperplane")
                         .font(.title)
@@ -458,7 +414,6 @@ struct UserProfileView: View {
         NavigationView {
             VStack(spacing: 20) {
                 if let user = user {
-                    // Profile Image
                     AsyncImage(url: URL(string: user.profileImageURL ?? "")) { image in
                         image
                             .resizable()
@@ -470,7 +425,6 @@ struct UserProfileView: View {
                     .frame(width: 100, height: 100)
                     .clipShape(Circle())
                     
-                    // User Info
                     VStack(spacing: 8) {
                         Text(user.fullName ?? "Unknown")
                             .font(.title2)
@@ -488,7 +442,6 @@ struct UserProfileView: View {
                         }
                     }
                     
-                    // Stats
                     HStack(spacing: 40) {
                         VStack {
                             Text("\(user.posts)")
@@ -535,36 +488,6 @@ struct UserProfileView: View {
         }
     }
 }
-
-struct TapNavigationOverlay: View {
-    let onPrevious: () -> Void
-    let onNext: () -> Void
-    
-    var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 0) {
-                Color.clear
-                    .frame(width: geometry.size.width / 2)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        print("Left side tapped")
-                        onPrevious()
-                    }
-                
-                Color.clear
-                    .frame(width: geometry.size.width / 2)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        print("Right side tapped")
-                        onNext()
-                    }
-            }
-            .frame(height: geometry.size.height)
-        }
-        .allowsHitTesting(true)
-    }
-}
-
 
 #Preview {
     StoryViewer(

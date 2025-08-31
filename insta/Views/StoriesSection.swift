@@ -13,7 +13,6 @@ struct StoriesSection: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Stories Header
             HStack {
                 Text("Stories")
                     .font(.headline)
@@ -33,13 +32,10 @@ struct StoriesSection: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
             
-            // Horizontal Stories Scroll
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 12) {
-                    // Add Story Button
                     AddStoryButton()
                     
-                    // Story Circles with pagination
                     ForEach(Array(viewModel.stories.enumerated()), id: \.element.objectID) { index, story in
                         StoryCircle(story: story, viewModel: viewModel) {
                             selectedStory = story
@@ -47,14 +43,12 @@ struct StoriesSection: View {
                             viewModel.markStoryAsViewed(story)
                         }
                         .onAppear {
-                            // Load more stories when approaching the end
                             if index >= viewModel.stories.count - 5 {
                                 viewModel.loadMoreStories()
                             }
                         }
                     }
                     
-                    // Loading indicator at the end
                     if viewModel.isLoading {
                         ProgressView()
                             .frame(width: 60, height: 60)
@@ -107,7 +101,6 @@ struct StoryCircle: View {
         Button(action: onTap) {
             VStack(spacing: 4) {
                 ZStack {
-                    // Story Ring
                     Circle()
                         .stroke(
                             LinearGradient(
@@ -119,7 +112,6 @@ struct StoryCircle: View {
                         )
                         .frame(width: 64, height: 64)
                     
-                    // Profile Image
                     AsyncImage(url: URL(string: story.author?.profileImageURL ?? "")) { image in
                         image
                             .resizable()
@@ -131,7 +123,6 @@ struct StoryCircle: View {
                     .frame(width: 56, height: 56)
                     .clipShape(Circle())
                     
-                    // Like indicator
                     if story.isLiked {
                         VStack {
                             Spacer()
@@ -140,7 +131,7 @@ struct StoryCircle: View {
                                 Image(systemName: "heart.fill")
                                     .font(.caption)
                                     .foregroundColor(.red)
-                                    .background(Color.white)
+                                    .background(Color(.systemBackground))
                                     .clipShape(Circle())
                                     .frame(width: 16, height: 16)
                             }

@@ -14,7 +14,7 @@ struct MainTabView: View {
             
             SearchView()
                 .tabItem {
-                    Image(systemName: selectedTab == 1 ? "magnifyingglass" : "magnifyingglass")
+                    Image(systemName: "magnifyingglass")
                     Text("Search")
                 }
                 .tag(1)
